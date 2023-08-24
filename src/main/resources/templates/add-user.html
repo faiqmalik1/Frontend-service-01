@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Voter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            width: 300px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        label, input, select, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #popup {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+
+        .message {
+            color: #45a049;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul>
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+<h1>Add Voter</h1>
+<div th:if="${not #strings.isEmpty(message)}" class="message" th:text="${message}"></div>
+<div th:if="${not #strings.isEmpty(errorMessage)}" class="error-message" th:text="${errorMessage}"></div>
+<form th:action="@{/ui/add-user}" method="post">
+    <input type="hidden" name="userId" th:value="${userId}"/>
+    <input type="hidden" name="userRole" th:value="${userRole}"/>
+
+    <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required/>
+    </div>
+
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required/>
+    </div>
+
+    <div>
+        <label for="CNIC">CNIC:</label>
+        <input type="text" id="CNIC" name="CNIC" pattern="\d{5}-\d{7}-\d"
+               title="Enter a valid CNIC (e.g., 12345-1234567-1)" required/>
+    </div>
+
+    <div>
+        <label for="halka">Halka:</label>
+        <select id="halka" name="halka" required>
+            <option th:each="halka : ${halkaList}" th:value="${halka.halkaName}" th:text="${halka.halkaName}"></option>
+        </select>
+    </div>
+    <div>
+        <label for="userType">User Type:</label>
+        <select id="userType" name="userType" required onchange="toggleDropdowns()">
+            <option value="Voter">Voter</option>
+            <option value="Candidate">Candidate</option>
+        </select>
+    </div>
+
+    <div id="constituencyDropdown" style="display: none;">
+        <label for="halkaId">Select Halka:</label>
+        <select id="halkaId" name="halkaId">
+            <option th:each="halka : ${halkaList}" th:value="${halka.constituencyId}" th:text="${halka.halkaName}">Halka
+                Name
+            </option>
+        </select>
+    </div>
+    <div id="partyDropdown" style="display: none;">
+        <label for="partyId">Select Party:</label>
+        <select id="partyId" name="partyId">
+            <option th:each="party : ${partyList}" th:value="${party.partyId}" th:text="${party.partyName}">Party Name
+            </option>
+        </select>
+    </div>
+    <div>
+        <button type="submit">Add User</button>
+    </div>
+    <a href="/ui/all-users">See all the voters list</a>
+</form>
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+
+    function toggleDropdowns() {
+        var userTypeDropdown = document.getElementById("userType");
+        var constituencyDropdown = document.getElementById("constituencyDropdown");
+        var partyDropdown = document.getElementById("partyDropdown");
+
+        if (userTypeDropdown.value === "Candidate") {
+            constituencyDropdown.style.display = "block";
+            partyDropdown.style.display = "block";
+        } else {
+            constituencyDropdown.style.display = "none";
+            partyDropdown.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>

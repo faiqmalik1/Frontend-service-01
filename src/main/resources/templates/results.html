@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Constituency Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #fff;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            margin-left: 60%;
+            width: 40%;
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .card p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card p span {
+            font-weight: bold;
+            color: #333;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul th:if="${userRole == 'voter'}">
+        <li><a th:href="@{'/ui/party-management?partyId='+0}">Become Candidate</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidate</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+    </ul>
+    <ul th:if="${userRole == 'admin'}">
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+    <ul th:if="${userRole == 'candidate'}">
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidates</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/constituency-voter'}">Constituency Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+<form th:action="@{/ui/submit-form}" method="post" th:object="${constituencyResultDTO}">
+    <div>
+        <label for="constituencyId">Select Constituency:</label>
+        <select id="constituencyId" name="constituencyId">
+            <option th:each="constituency : ${constituencies}" th:value="${constituency.constituencyId}"
+                    th:text="${constituency.halkaName}"></option>
+        </select>
+    </div>
+    <input type="hidden" name="pollingId" th:value="${pollingId}"/>
+    <button type="submit">Submit</button>
+</form>
+
+<h2>All Candidates</h2>
+<div class="card-container">
+    <div class="card-container">
+        <div class="card" th:each="candidate : ${allCandidates}">
+            <h3 th:if="${candidate != null && candidate.name != null}" th:text="${candidate.name}"></h3>
+            <img th:if="${candidate != null && candidate.base64Image != null}"
+                 th:src="@{'data:image/jpeg;base64,' + ${candidate.base64Image}}" width="20%"
+                 th:alt="${candidate.name}"/>
+            <p th:if="${candidate != null && candidate.partyName != null}">Party: <span
+                    th:text="${candidate.partyName}"></span></p>
+            <p th:if="${candidate != null && candidate.constituencyName != null}">Halka: <span
+                    th:text="${candidate.constituencyName}"></span></p>
+            <div class="candidate-votes" th:if="${candidate != null && candidate.votes!= null}">
+                <p><strong>Votes:</strong> <span th:text="${candidate.votes}"></span></p>
+            </div>
+        </div>
+        <div th:if="${not #strings.isEmpty(message)}" class="error-message" th:text="${message}"></div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+    setTokenInHeaders();
+    const setTokenInHeaders = (headers) => {
+        headers['Content-type'] = 'application/json';
+        headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin - Candidates Approval</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul th:if="${userRole == 'voter'}">
+        <li><a th:href="@{'/ui/party-management?partyId='+0}">Become Candidate</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidate</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+    </ul>
+    <ul th:if="${userRole == 'admin'}">
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+    <ul th:if="${userRole == 'candidate'}">
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidates</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/constituency-voter'}">Constituency Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+<h1>Admin - Approved Candidates</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>CNIC</th>
+        <th>Constituency</th>
+        <th>Party</th>
+    </tr>
+    <tr th:each="candidate : ${candidates}">
+        <td th:if="${candidate != null && candidate.name != null}" th:text="${candidate.name}"></td>
+        <td th:if="${candidate != null && candidate.cnic != null}"><span th:text="${candidate.cnic}"></span></td>
+        <td th:if="${candidate != null && candidate.constituencyName != null}"><span
+                th:text="${candidate.constituencyName}"></span></td>
+        <td th:if="${candidate != null && candidate.partyName != null}"><span th:text="${candidate.partyName}"></span>
+        </td>
+    </tr>
+</table>
+<div th:if="${not #strings.isEmpty(message)}" class="error-message" th:text="${message}"></div>
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+    setTokenInHeaders();
+    const setTokenInHeaders = (headers) => {
+        headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Poll Status</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 50px;
+        }
+
+        .timer {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .message {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+
+        .message {
+            color: #45a049;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+<nav>
+    <ul th:if="${userRole == 'voter'}">
+        <li><a th:href="@{'/ui/party-management?partyId='+0}">Become Candidate</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidate</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+    </ul>
+    <ul th:if="${userRole == 'admin'}">
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+    <ul th:if="${userRole == 'candidate'}">
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidates</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/constituency-voter'}">Constituency Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+
+
+<form id="pollingForm" th:if="${userRole == 'admin'}">
+    <label for="startDate" class="block mt-4 font-medium text-gray-700">Start Date:</label>
+    <input type="datetime-local" id="startDate" name="startDate" class="mt-1 p-2 rounded-md border border-gray-300">
+    <input type="hidden" name="userId" th:value="${userId}"/>
+    <input type="hidden" name="userRole" th:value="${userRole}"/>
+    <label for="endDate" class="block mt-4 font-medium text-gray-700">End Date:</label>
+    <input type="datetime-local" id="endDate" name="endDate" class="mt-1 p-2 rounded-md border border-gray-300">
+
+    <button type="button" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+        Set Polling Dates
+    </button>
+</form>
+<div class="flex justify-center h-screen">
+    <div class="text-center">
+        <h1 class="text-2xl font-bold mb-4">Poll Status</h1>
+        <p class="text-lg message" th:text="${message}"></p>
+        <p class="text-lg error-message" th:text="${errorMessage}"></p>
+        <span>Polling Id: </span>
+        <span class="text-lg" th:text="${pollingId}"></span>
+        <br>
+        <span>Polling Starting Time: </span>
+        <span class="text-lg" th:text="${pollingStartingTime}"></span>
+        <br>
+        <span>Polling Ending Time: </span>
+        <span class="text-lg" th:text="${pollingEndingTime}"></span>
+        <p th:if="${pollingStarted}">
+            <a th:href="@{'/ui/candidate-cards?pollingId=' + ${pollingId}}" style="color: #4CAF50">
+                Click here to vote
+            </a>
+        </p>
+        <p th:if="${pollingEnded}">
+            <a th:href="@{'/ui/poll-results/results'}" style="color: #4CAF50">
+                Click here to see votes
+            </a>
+        </p>
+        <p th:if="${userRole == 'admin'}">
+            <a th:href="@{'/ui/select-constituency?pollingId=' + ${pollingId}}" style="color: #4CAF50">
+                Click here to see constituency results
+            </a>
+        </p>
+    </div>
+</div>
+<div id="popup" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white py-2 px-4 rounded-md"
+     style="display: none;">
+</div>
+
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        token = localStorage.getItem('token');
+        const submitButton = document.querySelector('button[type="button"]');
+        submitButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const formData = new FormData();
+            formData.append('startDate', startDate);
+            formData.append('endDate', endDate);
+
+            fetch('/ui/set-polling-dates', {
+                method: 'POST',
+                'token': token,
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const popup = document.getElementById('popup');
+                    popup.innerText = data.message;
+                    if (data.code === "red") {
+                        popup.style.backgroundColor = 'red';
+                    } else if (data.code === "green") {
+                        popup.style.backgroundColor = 'green';
+                    }
+                    popup.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Party Management</title>
+    <link rel="stylesheet" href="/ui/css/party-management.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+
+        .error-message {
+            color: #45a049;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<nav>
+    <ul>
+        <li><a th:href="@{'/ui/party-management?partyId='+0}">Become Candidate</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidate</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+    </ul>
+</nav>
+
+<div th:if="${not #strings.isEmpty(message)}" class="error-message" th:text="${message}"></div>
+
+<h1>Party Management</h1>
+
+<!-- Party Selection Form -->
+<form th:action="@{/ui/party-management/confirm}" method="post">
+    <!-- Halka Dropdown -->
+    <label for="halkaId">Select Halka:</label>
+    <select id="halkaId" name="halkaId">
+        <option th:each="halka : ${halkaList}" th:value="${halka.constituencyId}" th:text="${halka.halkaName}">Halka
+            Name
+        </option>
+    </select>
+
+    <!-- Party Dropdown -->
+    <label for="partyId">Select Party:</label>
+    <select id="partyId" name="partyId">
+        <option th:each="party : ${partyList}" th:value="${party.partyId}" th:text="${party.partyName}">Party Name
+        </option>
+    </select>
+
+    <!-- Create Party Button -->
+    <button type="button" onclick="showCreatePartyPopup()" th:disabled="${not #strings.isEmpty(message)}">Create Party
+    </button>
+
+    <input type="hidden" name="userId" th:value="${userId}"/>
+    <input type="hidden" name="userRole" th:value="${userRole}"/>
+    <button type="submit">Confirm</button>
+</form>
+
+<!-- Create Party Popup -->
+<div class="modal" id="createPartyPopup">
+    <div class="modal-content">
+        <span class="close" onclick="hideCreatePartyPopup()">&times;</span>
+        <h2>Create Party</h2>
+        <form th:action="@{/ui/party-management/create-party}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="userId" th:value="${userId}"/>
+
+            <label for="partyName">Party Name:</label>
+            <input type="text" id="partyName" name="partyName" required>
+
+            <label for="partyLogo">Party Logo:</label>
+            <input type="file" id="partyLogo" name="partyLogo" accept="image/*" required>
+
+            <input type="hidden" name="userId" th:value="${userId}"/>
+            <input type="hidden" name="userRole" th:value="${userRole}"/>
+
+            <button type="submit">Create</button>
+        </form>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+    function showCreatePartyPopup() {
+        document.getElementById('createPartyPopup').style.display = 'block';
+    }
+
+    function hideCreatePartyPopup() {
+        document.getElementById('createPartyPopup').style.display = 'none';
+    }
+</script>
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+    setTokenInHeaders();
+    const setTokenInHeaders = (headers) => {
+        headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    };
+</script>
+</body>
+
+</html>

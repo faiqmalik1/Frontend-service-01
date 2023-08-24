@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile Settings</title>
+    <link rel="stylesheet" th:href="@{/ui/css/profile.css}"/>
+    <style>
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul th:if="${userRole == 'voter'}">
+        <li><a th:href="@{'/ui/party-management?partyId='+0}">Become Candidate</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidate</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+    </ul>
+    <ul th:if="${userRole == 'admin'}">
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+    <ul th:if="${userRole == 'candidate'}">
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/approved-candidates'}">All Candidates</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/constituency-voter'}">Constituency Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+<div class="container">
+    <div class="profile-image">
+        <img th:if="${user.img != null}" th:src="@{'data:image/jpeg;base64,' + ${base64Image}}" width="20%"/>
+        <p th:unless="${user.img}" class="fallback-profile-text" th:text="${user.name}"></p>
+        <form th:action="@{/ui/upload-image}" th:object="${user}" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" id="image" accept="image/*">
+            <button type="submit">Upload Image</button>
+            <input type="hidden" name="userId" th:value="${user.id}"/>
+        </form>
+
+    </div>
+    <div class="profile-details">
+        <h2>Profile Settings</h2>
+        <form action="/update-profile" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" th:value="${user.name}" required readonly/>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" th:value="${user.email}" required readonly/>
+            <label for="cnic">CNIC:</label>
+            <input type="text" id="cnic" name="cnic" th:value="${user.CNIC}" required readonly/>
+            <label for="halka">Halka:</label>
+            <input type="text" id="halka" name="halka" th:value="${user.getHalka()}" required readonly/>
+            <hr>
+        </form>
+    </div>
+</div>
+<script th:inline="javascript">
+    var token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1');
+    localStorage.setItem('token', token);
+    token = localStorage.getItem('token');
+    setTokenInHeaders();
+    const setTokenInHeaders = (headers) => {
+        headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    };
+</script>
+</body>
+</html>

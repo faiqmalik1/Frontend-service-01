@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin - Candidates Approval</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .btn-group {
+            display: inline-block;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .btn-approve {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-decline {
+            background-color: #FF5733;
+            color: white;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        nav a:hover {
+            color: #007bff;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+
+
+    </style>
+</head>
+<body>
+<nav>
+    <ul>
+        <li><a th:href="@{'/ui/approved-candidates'}">Candidates</a></li>
+        <li><a th:href="@{'/ui/show-candidates'}">Candidate Requests</a></li>
+        <li><a th:href="@{'/ui/constituencies'}">Constituencies</a></li>
+        <li><a th:href="@{'/ui/poll-status'}">Polling</a></li>
+        <li><a th:href="@{'/ui/add-user'}">Add Voter</a></li>
+        <li><a th:href="@{'/ui/profile'}">Profile</a></li>
+    </ul>
+</nav>
+<h1>Admin - Candidates Approval</h1>
+<div th:if="${not #strings.isEmpty(message)}" class="error-message" th:text="${message}"></div>
+<div th:if="${not #lists.isEmpty(candidates)}">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>CNIC</th>
+            <th>Constituency</th>
+            <th>Party</th>
+            <th>Actions</th>
+        </tr>
+        <tr th:each="candidate : ${candidates}">
+            <td th:if="${candidate != null && candidate.name != null}" th:text="${candidate.name}"></td>
+            <td th:if="${candidate != null && candidate.cnic != null}" th:text="${candidate.cnic}"></td>
+            <td th:if="${candidate != null && candidate.constituencyName != null}">
+                <span th:text="${candidate.constituencyName}"></span>
+            </td>
+            <td th:if="${candidate != null && candidate.partyName != null}">
+                <span th:text="${candidate.partyName}"></span>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-approve" th:if="${candidate != null && candidate.candidateId != null}"
+                            th:onclick="'approveCandidate(\'' + ${candidate.candidateId} + '\')'">
+                        Approve
+                    </button>
+                    <button class="btn btn-decline" th:if="${candidate != null && candidate.candidateId != null}"
+                            th:onclick="'declineCandidate(\'' + ${candidate.candidateId} + '\')'">
+                        Decline
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <p th:unless="${not #lists.isEmpty(candidates)}">No pending requests</p>
+</div>
+
+<!-- JavaScript to handle button clicks -->
+<script th:inline="javascript">
+    var token = getCookie("Authorization");
+
+    function approveCandidate(candidateId) {
+        if (token) {
+            fetch('/ui/approve-candidate/' + candidateId, {
+                method: 'POST',
+                'token': token,
+            })
+                .then(responseDTO => responseDTO.json())
+                .then(data => {
+                    console.log(data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
+
+    function declineCandidate(candidateId) {
+        if (token) {
+            fetch('/ui/decline-candidate/' + candidateId, {
+                method: 'POST',
+                'token': token,
+            })
+                .then(responseDTO => responseDTO.json())
+                .then(data => {
+                    console.log(data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
+
+    // Helper function to get a cookie by name
+    function getCookie(name) {
+        const value = '; ' + document.cookie;
+        const parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+</script>
+</body>
+</html>
