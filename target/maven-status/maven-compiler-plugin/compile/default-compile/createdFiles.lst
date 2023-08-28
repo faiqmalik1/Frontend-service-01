@@ -1,0 +1,15 @@
+com/votingsystem/frontendservice/feignController/UserController.class
+com/votingsystem/frontendservice/FrontendServiceApplication.class
+com/votingsystem/frontendservice/controller/PollStatusController.class
+com/votingsystem/frontendservice/resources/Utils.class
+com/votingsystem/frontendservice/feignController/CandidateFeignController.class
+com/votingsystem/frontendservice/feignController/VoterFeignController.class
+com/votingsystem/frontendservice/controller/AdminController.class
+com/votingsystem/frontendservice/controller/ConstituencyController.class
+com/votingsystem/frontendservice/controller/UserFormController.class
+com/votingsystem/frontendservice/resources/Authentication.class
+com/votingsystem/frontendservice/controller/PartyManagementController.class
+com/votingsystem/frontendservice/feignController/ConstituencyFeignController.class
+com/votingsystem/frontendservice/feignController/FeignClientInterceptorConfig.class
+com/votingsystem/frontendservice/controller/CandidateController.class
+com/votingsystem/frontendservice/feignController/FeignClientInterceptorConfig$1.class

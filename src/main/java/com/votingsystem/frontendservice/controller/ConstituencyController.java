@@ -12,7 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import resources.candidate.PartyListResponseDTO;
 import resources.candidate.PartyResponseDTO;
+import resources.constituency.ConstituencyListResponseDTO;
 import resources.constituency.ConstituencyRequestDTO;
 import resources.constituency.ConstituencyResponseDTO;
 import resources.user.ValidateResponseDTO;
@@ -32,10 +34,25 @@ public class ConstituencyController {
   public String constituencies(@CookieValue("Authorization") String token, Model model) {
     try {
       ValidateResponseDTO validateResponseDTO = userController.validateToken(token);
-      List<ConstituencyResponseDTO> constituencies = constituencyFeignController.retrieveConstituencies().getConstituencyResponseDTOList();
-      List<PartyResponseDTO> parties = candidateFeignController.retrieveAllParties(true).getPartyResponseDTOList();
-      model.addAttribute(Data.CONSTITUENCIES.getValue(), constituencies);
-      model.addAttribute(Data.PARTIES.getValue(), parties);
+      ConstituencyListResponseDTO constituencyListResponseDTO = constituencyFeignController.retrieveConstituencies();
+      if (constituencyListResponseDTO != null && constituencyListResponseDTO.getConstituencyResponseDTOList() != null && !constituencyListResponseDTO.getConstituencyResponseDTOList().isEmpty()) {
+        List<ConstituencyResponseDTO> constituencies = constituencyListResponseDTO.getConstituencyResponseDTOList();
+        model.addAttribute(Data.CONSTITUENCIES.getValue(), constituencies);
+        PartyListResponseDTO partyListResponseDTO = candidateFeignController.retrieveAllParties(true);
+        if (partyListResponseDTO != null && partyListResponseDTO.getPartyResponseDTOList() != null && !partyListResponseDTO.getPartyResponseDTOList().isEmpty()) {
+          List<PartyResponseDTO> parties = partyListResponseDTO.getPartyResponseDTOList();
+          model.addAttribute(Data.PARTIES.getValue(), parties);
+        }
+      } else {
+        constituencyFeignController.createConstituency();
+        candidateFeignController.createParty();
+        constituencyListResponseDTO = constituencyFeignController.retrieveConstituencies();
+        List<ConstituencyResponseDTO> constituencies = constituencyListResponseDTO.getConstituencyResponseDTOList();
+        model.addAttribute(Data.CONSTITUENCIES.getValue(), constituencies);
+        PartyListResponseDTO partyListResponseDTO = candidateFeignController.retrieveAllParties(true);
+        List<PartyResponseDTO> parties = partyListResponseDTO.getPartyResponseDTOList();
+        model.addAttribute(Data.PARTIES.getValue(), parties);
+      }
       model.addAttribute(Data.USERROLE.getValue(), validateResponseDTO.getUserRole().toLowerCase());
       return "all-constituencies";
     } catch (CommonException | FeignException ex) {

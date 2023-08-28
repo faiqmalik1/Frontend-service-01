@@ -106,4 +106,7 @@ public interface CandidateFeignController {
   @GetMapping("/candidate/party/{partyId}")
   public PartyListResponseDTO retrievePartiesById(@PathVariable long partyId);
 
+  @PostMapping("/candidate/party/create")
+  public ResponseDTO createParty();
+
 }
