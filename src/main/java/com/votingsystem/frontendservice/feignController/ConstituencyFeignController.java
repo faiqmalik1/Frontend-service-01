@@ -77,6 +77,6 @@ public interface ConstituencyFeignController {
   public PoolingResponseDTO retrievePolling(@PathVariable long pollingId);
 
   @PostMapping("/constituency/create")
-  public ResponseDTO createConstituency();
+  public ConstituencyResponseDTO createConstituency();
 
 }
